@@ -12,7 +12,7 @@ module.exports = {
   execute: async (client, message, args) => {
     if (!args.length || (args.length == 1 && !args[0].startsWith("@"))) {
       return message.channel.send({
-        content: `${message.author} please make sure to use the command like: ${config.prefix}el-tregister @Some-twitter-tag.`,
+        content: `${message.author} please make sure to use the command like: ${config.prefix}el-tregister ${config.twitter}.`,
       });
     }
     console.log(message.content.startsWith(`${config.prefix}el-tunregister`));
