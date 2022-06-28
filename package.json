@@ -5,6 +5,8 @@
     "discord.js": "^13.7.0",
     "fs": "^0.0.1-security",
     "sqlite3": "^5.0.8",
+    "twit": "^2.2.11",
+    "twitter-api-sdk": "^1.0.9",
     "twitter-api-v2": "^1.12.2"
   }
 }

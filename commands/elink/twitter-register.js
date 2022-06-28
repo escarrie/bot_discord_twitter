@@ -2,6 +2,7 @@ const config = require("../../config.json");
 const { MessageEmbed } = require("discord.js");
 
 const sqlite3 = require("sqlite3").verbose();
+const { getApi } = require("./../../twitter.js");
 const db = new sqlite3.Database("./guild.db");
 
 module.exports = {
@@ -18,17 +19,20 @@ module.exports = {
     console.log(message.content.startsWith(`${config.prefix}el-tunregister`));
     console.log(message.content);
     if (args.length == 1 && args[0].startsWith("@")) {
+      const api = getApi(config.twitter_api);
+      const twitter = await api.users.findUserByUsername(args[0].substring(1));
+      if (twitter.errors) {
+        return message.channel.send({
+          content: `The twitter ${args[0]} not found, make sure it's the correct username.`,
+        });
+      }
       db.run(
         `CREATE TABLE if not exists 'tb_${message.guildId}' (id INTEGER PRIMARY KEY, key TEXT NOT NULL UNIQUE, channel_id TEXT NOT NULL, twitter TEXT NOT NULL);`,
         function (err) {
           if (err) {
-            return console.log(
-              `[DATABASE] `.bold.red + `Create table not executed`.bold.white
-            );
+            return;
           }
-          return console.log(
-            `[DATABASE] `.bold.red + `Create table executed`.bold.white
-          );
+          return;
         }
       );
 
