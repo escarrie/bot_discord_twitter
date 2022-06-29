@@ -1,9 +1,6 @@
 const colors = require("colors");
 const config = require("../../config.json");
 
-const sqlite3 = require("sqlite3").verbose();
-const db = new sqlite3.Database("./guild.db");
-
 module.exports = {
   name: "messageCreate",
   once: true,
@@ -25,19 +22,6 @@ module.exports = {
             cmd.aliases &&
             cmd.aliases.includes(commandName.slice(prefix.length))
         );
-
-      db.run(
-        `CREATE TABLE if not exists guilds (id PRIMARY KEY, guild TEXT NOT NULL UNIQUE)`,
-        function (err) {
-          if (err) console.log(err);
-        }
-      );
-      db.run(
-        `INSERT INTO guilds (guild) VALUES('${message.guildId}')`,
-        function (err) {
-          if (err) console.log(err);
-        }
-      );
       if (!commandName.startsWith(prefix)) return;
       if (command) {
         message.delete().then(async () => {
@@ -47,9 +31,9 @@ module.exports = {
               `${prefix}${command.name}`.bold.blue +
               ` à été executée par ` +
               `${message.author.username}`.bold.blue +
-              ` on server: `.bold.white +
+              ` on server: ` +
               `${message.guildId}`.bold.blue +
-              `.`.bold.white
+              `.`
           );
         });
       }

@@ -1,33 +1,20 @@
-const { Client, Collection, MessageEmbed } = require("discord.js");
-const colors = require("colors");
-const config = require("./config.json");
+const config = require("../../config.json");
+const { MessageEmbed } = require("discord.js");
+const { getApi } = require("./../../twitter.js");
+const { TwitterParams } = require("twitter-api-sdk");
+const needle = require("needle");
 const Meta = require("html-metadata-parser");
-const { getApi } = require("./twitter.js");
-const fs = require("fs");
-const console = require("console");
 
-const client = new Client({
-  intents: 32767, // All intents
-});
+module.exports = {
+  name: "tlast",
+  aliases: ["tlast"],
+  description: `Show the last tweet for @${config.twitter_username}`,
 
-module.exports = client;
-
-client.commands = new Collection();
-client.slashCommands = new Collection();
-
-startProccess();
-
-function startProccess() {
-  require("./handler")(client);
-}
-
-client.login(config.token_discord);
-
-setInterval(async () => {
-    console.log("Check tweet");
-    let t_api = getApi(config.twitter_api_token);
+  execute: async (client, message, args) => {
+    if (!message.content.includes(`${config.prefix}tlast`)) return;
+    const api = getApi(config.twitter_api_token);
     const twitter = (
-      await t_api.users.findUserByUsername(config.twitter_username, {
+      await api.users.findUserByUsername(config.twitter_username, {
         "user.fields": [
           "id",
           "name",
@@ -43,7 +30,7 @@ setInterval(async () => {
     )?.data;
 
     let i = 0;
-    let last_tweet = await t_api.tweets.usersIdTweets(twitter?.id, {
+    let last_tweet = await api.tweets.usersIdTweets(twitter?.id, {
       max_results: 5,
       "place.fields": ["name"],
       "tweet.fields": [
@@ -88,7 +75,7 @@ setInterval(async () => {
         break;
       }
       if (is_last) {
-        last_tweet = await t_api.tweets.usersIdTweets(twitter?.id, {
+        last_tweet = await api.tweets.usersIdTweets(twitter?.id, {
           max_results: 5,
           pagination_token: `${last_tweet.meta.next_token}`,
           "place.fields": ["name"],
@@ -112,12 +99,6 @@ setInterval(async () => {
           "media.fields": ["url"],
         });
       }
-    }
-
-    const last_tweet_id = JSON.parse(fs.readFileSync("./tweet.json"));
-    if (last_tweet_id.includes(last_tweet.id)) {
-      console.log(`no more tweet`);
-      return;
     }
 
     const regex_url = /https?:\/\/[^\s]+/g;
@@ -144,32 +125,23 @@ setInterval(async () => {
         embed.addField("Link description:", meta_url.meta.description);
       }
     }
-
-    client.guilds.cache.forEach(async (guild) => {
-      let role_id;
-      await (await guild.roles.fetch()).forEach(async (role) => {
-        if (role.name === config.discord_role_mention) {
-          role_id = role.id;
-          return;
-        }
-      });
-
-      await (await guild.channels.fetch()).forEach(async (channel) => {
-        if (
-          channel.type === "GUILD_TEXT" &&
-          channel.name === `${config.discord_channel_name}`
-        ) {
-          await channel.send({ content: `<@&${role_id}>`, embeds: [embed] });
-          console.log(
-            `[API]`.bold.white +
-              ` new post twitter posted on server '`.bold.green +
-              `${guild.name}`.bold.blue +
-              `'`.bold.green
-          );
-        }
-      });
+    embed.setFooter({
+      text: `Reply: ${last_tweet.public_metrics.retweet_count} - Retweet: ${last_tweet.public_metrics.retweet_count} - Like(s): ${last_tweet.public_metrics.like_count}`,
     });
 
-    last_tweet_id.push(last_tweet.id);
-    fs.writeFileSync("./tweet.json", JSON.stringify(last_tweet_id));
-}, 1000 * 60);
+    let role_id;
+    await (
+      await message.guild.roles.fetch()
+    ).forEach(async (role) => {
+      if (role.name === config.discord_role_mention) {
+        role_id = role.id;
+        return;
+      }
+    });
+
+    return message.channel.send({
+      content: `|| <@&${role_id}> ||`,
+      embeds: [embed],
+    });
+  },
+};

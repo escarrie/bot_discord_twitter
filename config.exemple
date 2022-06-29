@@ -1,0 +1,10 @@
+{
+  "token_discord": "token_discord_bot",
+  "prefix": "!",
+  "twitter_username": "lazyflous",
+  "color_embed": "#6326ad",
+  "twitter_api_token": "BEARER TOKEN TWITTER",
+  "discord_role_mention": "Notification Twitter",
+  "discord_role_color": "#b434eb",
+  "discord_channel_name": "twitter-notification"
+}
