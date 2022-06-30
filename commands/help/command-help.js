@@ -23,7 +23,9 @@ module.exports = {
       embed.addField(`${config.prefix}${cmd.name}`, `${cmd.description}`);
     });
     embed.addField("\u200b", "\u200b");
-    embed.addField(``, ``, true);
+    embed.addField(`How to desable the bot`, `You can desable the Bot by removing the channel of tweet feed or deleting the bot`, true);
+
+
     return message.channel.send({
       embeds: [embed],
     });
