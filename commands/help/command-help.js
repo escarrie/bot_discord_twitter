@@ -22,7 +22,8 @@ module.exports = {
     client.commands.forEach((cmd) => {
       embed.addField(`${config.prefix}${cmd.name}`, `${cmd.description}`);
     });
-
+    embed.addField("\u200b", "\u200b");
+    embed.addField(``, ``, true);
     return message.channel.send({
       embeds: [embed],
     });
